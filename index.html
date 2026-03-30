@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0a0a">
+<title>Finanze PIVA</title>
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root {
+  --bg:    #0a0a0a;
+  --bg2:   #111111;
+  --bg3:   #181818;
+  --bg4:   #202020;
+  --bg5:   #2a2a2a;
+  --line:  rgba(255,255,255,0.06);
+  --line2: rgba(255,255,255,0.10);
+  --text:  #ede8e0;
+  --text2: #7a7570;
+  --text3: #444;
+  --teal:  #2dd4a0;
+  --teal2: #1a8a66;
+  --tealb: rgba(45,212,160,0.07);
+  --tealbl:rgba(45,212,160,0.15);
+  --amber: #e8a020;
+  --amberb:rgba(232,160,32,0.07);
+  --red:   #d95858;
+  --redb:  rgba(217,88,88,0.07);
+  --blue:  #6090e8;
+  --blueb: rgba(96,144,232,0.07);
+  --purple:#9880e8;
+  --purplb:rgba(152,128,232,0.07);
+  --r:     10px;
+  --rsm:   6px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg);scroll-behavior:smooth}
+body{font-family:'DM Mono',monospace;background:var(--bg);color:var(--text);min-height:100vh;font-size:13px;line-height:1.5;overflow-x:hidden}
+
+/* ── AUTH ── */
+#auth{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.75rem;padding:2rem;text-align:center}
+.auth-badge{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--teal);border:1px solid rgba(45,212,160,.25);padding:4px 14px;border-radius:20px}
+.auth-h{font-family:'Fraunces',serif;font-size:clamp(28px,6vw,44px);font-weight:300;color:var(--text);line-height:1.2}
+.auth-h em{color:var(--teal);font-style:italic}
+.auth-sub{font-size:12px;color:var(--text2);max-width:340px;line-height:1.8}
+.auth-box{background:var(--bg2);border:1px solid var(--line2);border-radius:var(--r);padding:1.25rem 1.5rem;width:100%;max-width:400px;text-align:left}
+.auth-box-title{font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--text3);margin-bottom:10px}
+.auth-box input{width:100%;padding:8px 12px;background:var(--bg3);border:1px solid var(--line2);border-radius:var(--rsm);color:var(--text);font-size:11px;font-family:'DM Mono',monospace;margin-bottom:6px}
+.auth-box input:focus{outline:none;border-color:var(--teal)}
+.auth-note{font-size:10px;color:var(--text3);line-height:1.7;margin-top:6px}
+.auth-note a{color:var(--teal);text-decoration:none}
+.auth-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.gbtn{display:flex;align-items:center;gap:9px;padding:11px 22px;background:var(--teal);color:#0a0a0a;border:none;border-radius:var(--r);font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Mono',monospace;transition:all .18s;letter-spacing:.02em}
+.gbtn:hover{background:#3ef5bb;transform:translateY(-1px)}
+.lbtn{display:flex;align-items:center;gap:7px;padding:11px 18px;background:transparent;color:var(--text2);border:1px solid var(--line2);border-radius:var(--r);font-size:12px;cursor:pointer;font-family:'DM Mono',monospace;transition:all .15s}
+.lbtn:hover{background:var(--bg3);color:var(--text)}
+
+/* ── APP SHELL ── */
+#app{display:none;min-height:100vh;padding-bottom:80px}
+
+/* ── TOPBAR ── */
+.topbar{position:sticky;top:0;z-index:200;background:rgba(10,10,10,.95);border-bottom:1px solid var(--line);backdrop-filter:blur(16px);display:flex;align-items:center;gap:0;padding:0 1rem}
+.brand{font-family:'Fraunces',serif;font-size:15px;font-weight:300;font-style:italic;color:var(--teal);padding:.85rem 1rem .85rem 0;border-right:1px solid var(--line);margin-right:.75rem;white-space:nowrap}
+.navtabs{display:flex;flex:1;overflow-x:auto;scrollbar-width:none;gap:0}
+.navtabs::-webkit-scrollbar{display:none}
+.ntab{padding:.85rem 1rem;font-size:11px;color:var(--text2);border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s;font-family:'DM Mono',monospace;letter-spacing:.04em}
+.ntab:hover{color:var(--text)}
+.ntab.on{color:var(--teal);border-bottom-color:var(--teal)}
+.topright{display:flex;align-items:center;gap:8px;margin-left:auto;padding-left:.75rem;flex-shrink:0}
+.spill{display:flex;align-items:center;gap:5px;font-size:10px;padding:3px 10px;border-radius:20px;background:var(--tealb);color:var(--teal);border:1px solid rgba(45,212,160,.2);white-space:nowrap;cursor:pointer;transition:all .15s}
+.spill:hover{background:var(--tealbl)}
+.spill.warn{background:var(--amberb);color:var(--amber);border-color:rgba(232,160,32,.2)}
+.spill.err{background:var(--redb);color:var(--red);border-color:rgba(217,88,88,.2)}
+.sdot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+.sdot.blink{animation:blink 1.2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.avatar{width:27px;height:27px;border-radius:50%;background:var(--tealb);border:1px solid rgba(45,212,160,.3);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--teal);cursor:pointer;flex-shrink:0}
+
+/* ── CONTENT ── */
+.wrap{max-width:1080px;margin:0 auto;padding:1.25rem 1rem}
+.sec{display:none}.sec.on{display:block}
+
+/* ── METRICS ── */
+.mg{display:grid;gap:8px;margin-bottom:10px}
+.mg2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.mg3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.mg4{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(max-width:640px){.mg3,.mg4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:380px){.mg2{grid-template-columns:1fr}}
+.met{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:.9rem 1rem}
+.ml{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:5px}
+.mv{font-size:20px;font-weight:300;color:var(--text);line-height:1}
+.mv.teal{color:var(--teal)}.mv.amber{color:var(--amber)}.mv.red{color:var(--red)}.mv.blue{color:var(--blue)}.mv.purple{color:var(--purple)}
+.msub{font-size:9px;color:var(--text3);margin-top:4px}
+.qbar{height:3px;background:var(--bg5);border-radius:2px;margin-top:6px;overflow:hidden}
+.qfill{height:100%;border-radius:2px;background:var(--teal);transition:width .4s}
+
+/* ── CARDS ── */
+.card{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:1.25rem;margin-bottom:.75rem}
+.ctitle{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:1rem}
+
+/* ── FORMS ── */
+.fg{display:flex;flex-direction:column;gap:4px}
+.fg label{font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--text3)}
+.fr{display:grid;gap:8px;margin-bottom:8px}
+.fr2{grid-template-columns:1fr 1fr}
+.fr3{grid-template-columns:1fr 1fr 1fr}
+@media(max-width:580px){.fr2,.fr3{grid-template-columns:1fr}}
+input[type=text],input[type=number],input[type=date],select,textarea{width:100%;padding:8px 11px;background:var(--bg3);border:1px solid var(--line2);border-radius:var(--rsm);color:var(--text);font-size:12px;font-family:'DM Mono',monospace;transition:border-color .15s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--teal)}
+select option{background:var(--bg3)}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;font-size:11px;border-radius:var(--rsm);cursor:pointer;border:1px solid var(--line2);background:transparent;color:var(--text);font-family:'DM Mono',monospace;transition:all .15s;white-space:nowrap}
+.btn:hover{background:var(--bg4);border-color:var(--line2)}
+.btn.pr{background:var(--teal);color:#0a0a0a;border-color:var(--teal)}
+.btn.pr:hover{background:#3ef5bb}
+.btn.sm{padding:4px 10px;font-size:10px}
+.btn.dr{color:var(--red);border-color:transparent}
+.btn.dr:hover{background:var(--redb)}
+.btn.ghost{color:var(--text2);border-color:transparent}
+.btn.ghost:hover{background:var(--bg3);color:var(--text)}
+.brow{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+
+/* ── TABLES ── */
+.tw{overflow-x:auto;margin-top:10px;border-radius:var(--rsm);border:1px solid var(--line)}
+table{width:100%;border-collapse:collapse;font-size:11px;min-width:480px}
+th{font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);white-space:nowrap;background:var(--bg3)}
+td{padding:9px 10px;border-bottom:1px solid var(--line);color:var(--text);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.015)}
+.es{text-align:center;padding:2rem;color:var(--text3);font-size:12px}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:9px;letter-spacing:.04em}
+.badge.teal{background:var(--tealb);color:var(--teal);border:1px solid rgba(45,212,160,.2)}
+.badge.amber{background:var(--amberb);color:var(--amber);border:1px solid rgba(232,160,32,.2)}
+.badge.red{background:var(--redb);color:var(--red);border:1px solid rgba(217,88,88,.2)}
+.badge.blue{background:var(--blueb);color:var(--blue);border:1px solid rgba(96,144,232,.2)}
+.badge.purple{background:var(--purplb);color:var(--purple);border:1px solid rgba(152,128,232,.2)}
+.tag{display:inline-block;padding:1px 6px;background:var(--bg4);border-radius:3px;font-size:9px;color:var(--text3)}
+
+/* ── PREVIEW BOX ── */
+.pbox{display:none;margin-top:8px;background:var(--amberb);border:1px solid rgba(232,160,32,.2);border-radius:var(--rsm);padding:10px 14px;justify-content:space-between;align-items:center}
+.pbox.show{display:flex}
+
+/* ── INNER TABS ── */
+.itabs{display:flex;gap:4px;margin-bottom:.75rem;flex-wrap:wrap}
+.itab{padding:4px 12px;font-size:10px;border-radius:20px;cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--text3);font-family:'DM Mono',monospace;transition:all .15s;letter-spacing:.04em}
+.itab:hover{color:var(--text2);border-color:var(--line2)}
+.itab.on{background:var(--bg3);color:var(--text);border-color:var(--line2)}
+
+/* ── CHARTS ── */
+.cg{display:grid;gap:.75rem;margin-bottom:.75rem}
+.cg2{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:640px){.cg2{grid-template-columns:1fr}}
+.cbox{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:1.25rem}
+.ctlabel{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:10px}
+.chw{position:relative;width:100%}
+.leg{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:8px}
+.leg span{display:flex;align-items:center;gap:4px;font-size:9px;color:var(--text2)}
+.lsq{width:7px;height:7px;border-radius:1px;flex-shrink:0}
+
+/* ── SETTINGS ── */
+.srow{display:flex;align-items:flex-start;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--line);gap:12px}
+.srow:last-child{border-bottom:none}
+.srl{font-size:12px;color:var(--text)}
+.srd{font-size:10px;color:var(--text3);margin-top:2px}
+.srow select,.srow input[type=text]{width:170px}
+
+/* ── CONFIG PREVIEW ── */
+.cfgbox{background:var(--bg3);border:1px solid var(--line);border-radius:var(--r);padding:1rem 1.25rem;margin-top:12px}
+.cfgg{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:8px}
+.cfgi{font-size:9px;color:var(--text3);letter-spacing:.06em;text-transform:uppercase}
+.cfgi strong{display:block;font-size:16px;color:var(--amber);font-weight:300;margin-top:3px;letter-spacing:0}
+
+/* ── GUIDE ── */
+.gstep{display:flex;gap:12px;margin-bottom:1.25rem}
+.gnum{width:24px;height:24px;border-radius:50%;background:var(--tealb);border:1px solid rgba(45,212,160,.25);color:var(--teal);display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;margin-top:1px}
+.gtitle{font-size:12px;color:var(--text);margin-bottom:4px;font-family:'Fraunces',serif;font-weight:400}
+.gdesc{font-size:11px;color:var(--text2);line-height:1.8}
+.gdesc a{color:var(--teal);text-decoration:none}
+.gdesc code{background:var(--bg4);padding:1px 6px;border-radius:3px;color:var(--teal);font-size:10px}
+.infobox{background:var(--tealb);border:1px solid rgba(45,212,160,.15);border-radius:var(--rsm);padding:10px 14px;font-size:11px;color:var(--teal);line-height:1.8;margin:.75rem 0}
+.warnbox{background:var(--amberb);border:1px solid rgba(232,160,32,.15);border-radius:var(--rsm);padding:10px 14px;font-size:11px;color:var(--amber);line-height:1.8;margin:.75rem 0}
+
+/* ── PDF SECTION ── */
+.pdf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-top:10px}
+.pdf-card{background:var(--bg3);border:1px solid var(--line);border-radius:var(--r);padding:1rem;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.pdf-card:hover{border-color:var(--line2);background:var(--bg4)}
+.pdf-icon{font-size:28px;margin-bottom:8px;display:block}
+.pdf-name{font-size:10px;color:var(--text);word-break:break-word;line-height:1.4;margin-bottom:4px}
+.pdf-meta{font-size:9px;color:var(--text3)}
+.pdf-del{position:absolute;top:6px;right:6px;opacity:0;transition:opacity .15s}
+.pdf-card:hover .pdf-del{opacity:1}
+.upload-zone{border:2px dashed var(--line2);border-radius:var(--r);padding:2rem;text-align:center;cursor:pointer;transition:all .2s;margin-top:10px}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--teal);background:var(--tealb)}
+.upload-zone input{display:none}
+.uz-icon{font-size:32px;margin-bottom:8px;display:block}
+.uz-text{font-size:12px;color:var(--text2)}
+.uz-sub{font-size:10px;color:var(--text3);margin-top:4px}
+.pdf-viewer{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:500;display:none;flex-direction:column}
+.pdf-viewer.show{display:flex}
+.pv-bar{display:flex;align-items:center;gap:10px;padding:.75rem 1rem;background:var(--bg2);border-bottom:1px solid var(--line);flex-shrink:0}
+.pv-title{flex:1;font-size:12px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pv-frame{flex:1;width:100%;border:none;background:white}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:1.5rem;right:1rem;z-index:999;background:var(--bg3);border:1px solid var(--line2);border-radius:var(--r);padding:9px 15px;font-size:11px;color:var(--text);opacity:0;transform:translateY(8px);transition:all .22s;pointer-events:none;max-width:280px}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.ok{border-color:rgba(45,212,160,.35);color:var(--teal)}
+.toast.err{border-color:rgba(217,88,88,.35);color:var(--red)}
+
+/* ── MOBILE BOTTOM NAV ── */
+.bnav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:200;background:rgba(10,10,10,.97);border-top:1px solid var(--line);backdrop-filter:blur(16px)}
+@media(max-width:640px){.bnav{display:flex}.topbar .navtabs{display:none}.topbar{padding:0 .75rem}}
+.bnavi{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:.6rem .25rem;cursor:pointer;border:none;background:transparent;color:var(--text3);font-size:9px;font-family:'DM Mono',monospace;letter-spacing:.06em;transition:color .15s}
+.bnavi.on{color:var(--teal)}
+.bnavi svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.5}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bg5);border-radius:2px}
+</style>
+</head>
+<body>
+
+<!-- AUTH -->
+<div id="auth">
+  <span class="auth-badge">Partita IVA · Finanze Personali</span>
+  <h1 class="auth-h">Il tuo pannello<br><em>fiscale e patrimoniale</em></h1>
+  <p class="auth-sub">Dati sincronizzati su Google Sheets e Drive. Accessibile da qualsiasi dispositivo, sempre aggiornato.</p>
+
+  <div class="auth-box">
+    <div class="auth-box-title">Google Client ID</div>
+    <input type="text" id="cfg-cid" placeholder="123456…apps.googleusercontent.com" autocomplete="off" spellcheck="false">
+    <div class="auth-note">
+      Non hai il Client ID? <a href="#" onclick="skipToGuide()">Vai alla guida setup →</a><br>
+      Puoi anche continuare senza Google — i dati resteranno nel browser.
+    </div>
+  </div>
+
+  <div class="auth-btns">
+    <button class="gbtn" onclick="startAuth()">
+      <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#0a0a0a" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#0a0a0a" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#0a0a0a" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#0a0a0a" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Accedi con Google
+    </button>
+    <button class="lbtn" onclick="startLocal()">Continua senza Google</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <div class="brand">Fin//PIVA</div>
+    <div class="navtabs">
+      <button class="ntab on"  onclick="go('dash',this)">Dashboard</button>
+      <button class="ntab"     onclick="go('piva',this)">P.IVA</button>
+      <button class="ntab"     onclick="go('fatture',this)">Fatture PDF</button>
+      <button class="ntab"     onclick="go('fp',this)">Finanze</button>
+      <button class="ntab"     onclick="go('cfg',this)">Impostazioni</button>
+      <button class="ntab"     onclick="go('guida',this)">Guida Google</button>
+    </div>
+    <div class="topright">
+      <div class="spill" id="spill" onclick="syncNow()"><span class="sdot" id="sdot"></span><span id="slabel">locale</span></div>
+      <div class="avatar" id="uav">?</div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ══ DASHBOARD ══ -->
+    <div id="sec-dash" class="sec on">
+      <div class="mg mg4" style="margin-bottom:.75rem">
+        <div class="met"><div class="ml">Incassato <span id="d-yr">2025</span></div><div class="mv teal" id="d-inc">€0</div></div>
+        <div class="met"><div class="ml">Da accantonare</div><div class="mv amber" id="d-acc">€0</div><div class="msub" id="d-apct">—% per fattura</div></div>
+        <div class="met"><div class="ml">Liquidità personale</div><div class="mv blue" id="d-liq">€0</div></div>
+        <div class="met"><div class="ml">Patrimonio netto</div><div class="mv teal" id="d-pat">€0</div></div>
+      </div>
+      <div class="cbox" style="margin-bottom:.75rem">
+        <div class="ctlabel">Incassi P.IVA — andamento mensile</div>
+        <div class="leg">
+          <span><span class="lsq" style="background:#2dd4a0"></span>Lordo</span>
+          <span><span class="lsq" style="background:#e8a020"></span>Accantonamento</span>
+          <span><span class="lsq" style="background:#163d2e"></span>Netto</span>
+        </div>
+        <div class="chw" style="height:200px"><canvas id="ch-piva"></canvas></div>
+      </div>
+      <div class="cg cg2">
+        <div class="cbox">
+          <div class="ctlabel">Entrate vs uscite personali</div>
+          <div class="leg">
+            <span><span class="lsq" style="background:#6090e8"></span>Entrate</span>
+            <span><span class="lsq" style="background:#d95858"></span>Uscite</span>
+          </div>
+          <div class="chw" style="height:160px"><canvas id="ch-mov"></canvas></div>
+        </div>
+        <div class="cbox">
+          <div class="ctlabel">Distribuzione patrimonio</div>
+          <div class="leg" id="leg-pat"></div>
+          <div class="chw" style="height:140px"><canvas id="ch-pat"></canvas></div>
+        </div>
+      </div>
+      <div class="cg cg2">
+        <div class="cbox">
+          <div class="ctlabel">INPS — pagate vs residue</div>
+          <div class="chw" style="height:130px"><canvas id="ch-inps"></canvas></div>
+        </div>
+        <div class="cbox">
+          <div class="ctlabel">Soglia forfettario €85.000</div>
+          <div class="chw" style="height:130px"><canvas id="ch-soglia"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ P.IVA ══ -->
+    <div id="sec-piva" class="sec">
+      <div class="mg mg3" style="margin-bottom:8px">
+        <div class="met"><div class="ml">Incassato <span id="p-yr">2025</span></div><div class="mv teal" id="p-inc">€0</div></div>
+        <div class="met"><div class="ml">Da accantonare</div><div class="mv amber" id="p-acc">€0</div></div>
+        <div class="met"><div class="ml">Netto disponibile</div><div class="mv" id="p-net">€0</div></div>
+      </div>
+      <div class="mg mg3" style="margin-bottom:.75rem">
+        <div class="met">
+          <div class="ml">Soglia €85.000</div>
+          <div class="qbar"><div class="qfill" id="p-qf" style="width:0%"></div></div>
+          <div class="msub" id="p-qp">0%</div>
+        </div>
+        <div class="met"><div class="ml">INPS pagata</div><div class="mv" id="p-ipag">€0</div></div>
+        <div class="met"><div class="ml">INPS residua (stima)</div><div class="mv red" id="p-ires">€0</div></div>
+      </div>
+      <div class="card">
+        <div class="ctitle">Registra incasso</div>
+        <div class="fr fr2">
+          <div class="fg"><label>Data</label><input type="date" id="i-d"></div>
+          <div class="fg"><label>N° Fattura</label><input type="text" id="i-f" placeholder="2025-001"></div>
+        </div>
+        <div class="fr fr2">
+          <div class="fg"><label>Cliente</label><input type="text" id="i-c" placeholder="Nome cliente o azienda"></div>
+          <div class="fg"><label>Importo lordo (€)</label><input type="number" id="i-i" placeholder="0.00" step="0.01" oninput="prevInc()"></div>
+        </div>
+        <div class="fg" style="margin-bottom:8px"><label>Note</label><input type="text" id="i-n" placeholder="Descrizione prestazione (opzionale)"></div>
+        <div class="pbox" id="i-prev">
+          <div>
+            <div style="font-size:10px;color:var(--amber);letter-spacing:.05em">ACCANTONARE — IRPEF + INPS</div>
+            <div style="font-size:9px;color:var(--text3);margin-top:2px" id="i-pbr">—</div>
+          </div>
+          <div style="font-size:19px;color:var(--amber);font-weight:300" id="i-pv">€0</div>
+        </div>
+        <div class="brow">
+          <button class="btn pr" onclick="addInc()">+ Aggiungi incasso</button>
+        </div>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem;flex-wrap:wrap;gap:8px">
+          <div class="ctitle" style="margin:0">Storico incassi</div>
+          <select id="fil-yr" onchange="renderInc()" style="width:auto;padding:5px 9px;font-size:10px">
+            <option value="2025">2025</option><option value="2026">2026</option><option value="tutti">Tutti gli anni</option>
+          </select>
+        </div>
+        <div class="tw"><table>
+          <thead><tr><th>Data</th><th>Cliente</th><th>Fattura</th><th>Lordo</th><th>Accont.</th><th>Netto</th><th></th></tr></thead>
+          <tbody id="tb-inc"><tr><td colspan="7" class="es">Nessun incasso registrato</td></tr></tbody>
+        </table></div>
+      </div>
+      <div class="card">
+        <div class="ctitle">Rate & scadenze INPS</div>
+        <div class="fr fr3">
+          <div class="fg"><label>Scadenza</label><input type="date" id="in-d"></div>
+          <div class="fg"><label>Importo (€)</label><input type="number" id="in-i" placeholder="0.00" step="0.01"></div>
+          <div class="fg"><label>Tipo rata</label>
+            <select id="in-t"><option>Contributo minimo</option><option>Acconto I</option><option>Acconto II</option><option>Saldo</option></select>
+          </div>
+        </div>
+        <div class="brow">
+          <button class="btn pr" onclick="addINPS()">+ Aggiungi rata</button>
+          <button class="btn ghost" onclick="genINPS()">Auto-stima da incassi</button>
+        </div>
+        <div class="tw"><table>
+          <thead><tr><th>Scadenza</th><th>Tipo</th><th>Importo</th><th>Stato</th><th></th></tr></thead>
+          <tbody id="tb-inps"><tr><td colspan="5" class="es">Nessuna rata inserita</td></tr></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ══ FATTURE PDF ══ -->
+    <div id="sec-fatture" class="sec">
+      <div class="card">
+        <div class="ctitle">Archivio fatture PDF</div>
+        <div class="infobox" id="pdf-drive-info" style="display:none">
+          I PDF vengono caricati e archiviati direttamente nel tuo Google Drive nella cartella <strong>Finanze PIVA / Fatture</strong>. Accessibili da qualsiasi dispositivo.
+        </div>
+        <div class="warnbox" id="pdf-local-info">
+          Modalità locale — i PDF vengono salvati nel browser (localStorage). Connetti Google Drive per l'archiviazione permanente e cross-device.
+        </div>
+
+        <div class="fr fr3" style="margin-bottom:8px">
+          <div class="fg"><label>Collega a fattura n°</label><input type="text" id="pdf-fat" placeholder="es. 2025-001"></div>
+          <div class="fg"><label>Cliente</label><input type="text" id="pdf-cli" placeholder="Nome cliente"></div>
+          <div class="fg"><label>Anno</label><select id="pdf-yr"><option>2025</option><option>2026</option></select></div>
+        </div>
+
+        <label class="upload-zone" id="upload-zone" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropFile(event)">
+          <input type="file" id="pdf-input" accept="application/pdf" multiple onchange="handlePDF(event)">
+          <span class="uz-icon">📄</span>
+          <span class="uz-text">Trascina qui i PDF delle fatture</span>
+          <span class="uz-sub">oppure clicca per selezionarli · max 10MB per file</span>
+        </label>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:1rem;flex-wrap:wrap;gap:8px">
+          <div class="ctitle" style="margin:0">Fatture archiviate (<span id="pdf-count">0</span>)</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <select id="pdf-fil-yr" onchange="renderPDF()" style="width:auto;padding:4px 8px;font-size:10px">
+              <option value="tutti">Tutti gli anni</option><option value="2025">2025</option><option value="2026">2026</option>
+            </select>
+            <input type="text" id="pdf-search" placeholder="Cerca fattura..." oninput="renderPDF()" style="width:150px;padding:4px 9px;font-size:10px">
+          </div>
+        </div>
+
+        <div class="pdf-grid" id="pdf-grid">
+          <div class="es" style="grid-column:1/-1">Nessuna fattura archiviata</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ FINANZE PERSONALI ══ -->
+    <div id="sec-fp" class="sec">
+      <div class="mg mg3" style="margin-bottom:8px">
+        <div class="met"><div class="ml">Liquidità totale</div><div class="mv teal" id="f-liq">€0</div></div>
+        <div class="met"><div class="ml">Risparmi</div><div class="mv blue" id="f-rsp">€0</div></div>
+        <div class="met"><div class="ml">Investimenti</div><div class="mv purple" id="f-inv">€0</div></div>
+      </div>
+      <div class="mg mg3" style="margin-bottom:.75rem">
+        <div class="met"><div class="ml">Patrimonio netto</div><div class="mv teal" id="f-pat">€0</div></div>
+        <div class="met"><div class="ml">Debiti carte</div><div class="mv red" id="f-deb">€0</div></div>
+        <div class="met"><div class="ml">Entrate mese</div><div class="mv" id="f-em">€0</div></div>
+      </div>
+      <div class="itabs">
+        <button class="itab on" onclick="showFt('conti',this)">Conti & contante</button>
+        <button class="itab"    onclick="showFt('carte',this)">Carte credito</button>
+        <button class="itab"    onclick="showFt('rsp',this)">Risparmi & investimenti</button>
+        <button class="itab"    onclick="showFt('mov',this)">Movimenti</button>
+      </div>
+      <div id="ft-conti" class="ft">
+        <div class="card">
+          <div class="ctitle">Conti bancari & contante</div>
+          <div class="fr fr2">
+            <div class="fg"><label>Nome conto</label><input type="text" id="cc-n" placeholder="es. Conto Intesa, N26, Contante"></div>
+            <div class="fg"><label>Saldo (€)</label><input type="number" id="cc-s" placeholder="0.00" step="0.01"></div>
+          </div>
+          <div class="fr fr2">
+            <div class="fg"><label>Tipo</label><select id="cc-t"><option>Conto corrente</option><option>Conto deposito</option><option>Contante</option><option>Conto estero</option></select></div>
+            <div class="fg" style="justify-content:flex-end"><button class="btn pr" style="margin-top:auto" onclick="addConto()">+ Aggiungi</button></div>
+          </div>
+          <div class="tw"><table><thead><tr><th>Nome</th><th>Tipo</th><th>Saldo</th><th></th></tr></thead>
+          <tbody id="tb-conti"><tr><td colspan="4" class="es">Nessun conto</td></tr></tbody></table></div>
+        </div>
+      </div>
+      <div id="ft-carte" class="ft" style="display:none">
+        <div class="card">
+          <div class="ctitle">Carte di credito</div>
+          <div class="fr fr3">
+            <div class="fg"><label>Nome carta</label><input type="text" id="ca-n" placeholder="es. Amex, Visa"></div>
+            <div class="fg"><label>Saldo dovuto (€)</label><input type="number" id="ca-s" placeholder="0.00" step="0.01"></div>
+            <div class="fg"><label>Limite (€)</label><input type="number" id="ca-l" placeholder="0.00" step="0.01"></div>
+          </div>
+          <button class="btn pr" onclick="addCarta()">+ Aggiungi carta</button>
+          <div class="tw"><table><thead><tr><th>Carta</th><th>Dovuto</th><th>Limite</th><th>Uso %</th><th></th></tr></thead>
+          <tbody id="tb-carte"><tr><td colspan="5" class="es">Nessuna carta</td></tr></tbody></table></div>
+        </div>
+      </div>
+      <div id="ft-rsp" class="ft" style="display:none">
+        <div class="card">
+          <div class="ctitle">Risparmi & investimenti</div>
+          <div class="fr fr2">
+            <div class="fg"><label>Nome</label><input type="text" id="rs-n" placeholder="es. Fondo emergenza, ETF World, BTP"></div>
+            <div class="fg"><label>Valore (€)</label><input type="number" id="rs-v" placeholder="0.00" step="0.01"></div>
+          </div>
+          <div class="fr fr2">
+            <div class="fg"><label>Categoria</label><select id="rs-t"><option>Fondo emergenza</option><option>Risparmio obiettivo</option><option>ETF / Azionario</option><option>Obbligazioni / BTP</option><option>Crypto</option><option>Immobiliare</option><option>Altro</option></select></div>
+            <div class="fg" style="justify-content:flex-end"><button class="btn pr" style="margin-top:auto" onclick="addRsp()">+ Aggiungi</button></div>
+          </div>
+          <div class="tw"><table><thead><tr><th>Nome</th><th>Categoria</th><th>Valore</th><th></th></tr></thead>
+          <tbody id="tb-rsp"><tr><td colspan="4" class="es">Nessun elemento</td></tr></tbody></table></div>
+        </div>
+      </div>
+      <div id="ft-mov" class="ft" style="display:none">
+        <div class="card">
+          <div class="ctitle">Nuovo movimento personale</div>
+          <div class="fr fr2">
+            <div class="fg"><label>Data</label><input type="date" id="mv-d"></div>
+            <div class="fg"><label>Descrizione</label><input type="text" id="mv-desc" placeholder="es. Stipendio, affitto, spesa"></div>
+          </div>
+          <div class="fr fr3">
+            <div class="fg"><label>Importo (€)</label><input type="number" id="mv-i" placeholder="0.00" step="0.01"></div>
+            <div class="fg"><label>Tipo</label><select id="mv-t"><option value="entrata">Entrata</option><option value="uscita">Uscita</option></select></div>
+            <div class="fg"><label>Categoria</label><select id="mv-c"><option>P.IVA / Lavoro</option><option>Affitto</option><option>Utenze</option><option>Spesa alimentare</option><option>Trasporti</option><option>Salute</option><option>Intrattenimento</option><option>Abbonamenti</option><option>Risparmi</option><option>Altro</option></select></div>
+          </div>
+          <button class="btn pr" onclick="addMov()">+ Aggiungi movimento</button>
+          <div class="tw"><table><thead><tr><th>Data</th><th>Descrizione</th><th>Categoria</th><th>Importo</th><th></th></tr></thead>
+          <tbody id="tb-mov"><tr><td colspan="5" class="es">Nessun movimento</td></tr></tbody></table></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ IMPOSTAZIONI ══ -->
+    <div id="sec-cfg" class="sec">
+      <div class="card">
+        <div class="ctitle">Configurazione fiscale P.IVA</div>
+        <div class="srow">
+          <div><div class="srl">Aliquota IRPEF forfettaria</div><div class="srd">5% nuova attività (primi 5 anni) · 15% standard</div></div>
+          <select id="c-irpef" onchange="saveCfg()"><option value="0.05" selected>5% — nuova attività</option><option value="0.15">15% — standard</option></select>
+        </div>
+        <div class="srow">
+          <div><div class="srl">Coefficiente redditività ATECO</div><div class="srd">Dipende dal tuo codice attività</div></div>
+          <select id="c-coeff" onchange="saveCfg()"><option value="0.40">40% — Commercio</option><option value="0.54">54% — Intermediari</option><option value="0.67" selected>67% — Artigianato</option><option value="0.78">78% — Professionisti</option><option value="0.86">86% — Altri servizi</option></select>
+        </div>
+        <div class="srow">
+          <div><div class="srl">Aliquota INPS</div><div class="srd">Gestione separata con riduzione 35% forfettari</div></div>
+          <select id="c-inps" onchange="saveCfg()"><option value="0.26725" selected>26,72% — Gest. sep. ridotta</option><option value="0.2672">26,72% — Gest. sep. piena</option><option value="0.24">24% — Art./comm. ridotta</option></select>
+        </div>
+        <div class="srow">
+          <div><div class="srl">Anno fiscale</div></div>
+          <select id="c-anno" onchange="saveCfg()"><option value="2025" selected>2025</option><option value="2026">2026</option></select>
+        </div>
+        <div class="cfgbox">
+          <div style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3)">Accantonamento per ogni €1.000 incassati</div>
+          <div class="cfgg">
+            <div class="cfgi">IRPEF<strong id="c-irpef-v">—</strong></div>
+            <div class="cfgi">INPS<strong id="c-inps-v">—</strong></div>
+            <div class="cfgi" style="color:var(--text2)">Totale<strong id="c-tot-v" style="color:var(--amber);font-size:20px">—</strong></div>
+          </div>
+          <div style="font-size:10px;color:var(--text3);margin-top:8px">Netto spendibile per €1.000: <span id="c-net-v" style="color:var(--teal)">—</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ctitle">Google — connessione</div>
+        <div class="srow">
+          <div><div class="srl">Google Client ID</div><div class="srd">Necessario per sync con Sheets e Drive</div></div>
+          <input type="text" id="s-cid" placeholder="Client ID..." onchange="saveClientId()" style="font-size:10px">
+        </div>
+        <div class="srow">
+          <div><div class="srl">Spreadsheet ID</div><div class="srd">Generato automaticamente al primo accesso</div></div>
+          <input type="text" id="s-sid" placeholder="auto" readonly style="font-size:10px;color:var(--text3)">
+        </div>
+        <div class="srow">
+          <div><div class="srl">Cartella Drive fatture</div><div class="srd">Creata in automatico: Finanze PIVA / Fatture</div></div>
+          <span style="font-size:10px;color:var(--text3)" id="s-folder">—</span>
+        </div>
+        <div class="srow">
+          <div><div class="srl">Ultimo salvataggio</div></div>
+          <span style="font-size:10px;color:var(--text3)" id="s-sync">—</span>
+        </div>
+        <div class="brow">
+          <button class="btn pr" onclick="syncNow()">Sincronizza ora</button>
+          <button class="btn ghost" onclick="exportJSON()">Esporta JSON</button>
+          <button class="btn dr" onclick="if(confirm('Eliminare tutti i dati locali?'))resetAll()">Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ GUIDA GOOGLE ══ -->
+    <div id="sec-guida" class="sec">
+      <div class="card">
+        <div class="ctitle">Setup Google Cloud — guida completa</div>
+        <div class="infobox">
+          Questa guida configura l'integrazione Google in modo che l'app possa leggere e scrivere automaticamente su Google Sheets (dati finanziari) e Google Drive (PDF fatture). Una volta configurato, tutto è sincronizzato in tempo reale su tutti i tuoi dispositivi.
+        </div>
+
+        <div class="warnbox">
+          <strong>Prerequisito:</strong> l'app deve essere servita da un dominio HTTPS — GitHub Pages la rende disponibile su <code>https://tuonome.github.io/finanze-piva</code>, che è perfetto. OAuth Google non funziona su <code>file://</code> né su <code>http://</code>.
+        </div>
+
+        <div class="gstep"><div class="gnum">1</div><div>
+          <div class="gtitle">Crea il repository GitHub e attiva GitHub Pages</div>
+          <div class="gdesc">
+            Vai su <a href="https://github.com/new" target="_blank">github.com/new</a> e crea un repository pubblico chiamato <code>finanze-piva</code>.<br>
+            Carica i file dell'app (<code>index.html</code>, <code>manifest.json</code>).<br>
+            Vai su <strong>Settings → Pages → Source: Deploy from branch → main → / (root)</strong>.<br>
+            Dopo 1-2 minuti l'app è live su <code>https://tuonome.github.io/finanze-piva</code>.
+          </div>
+        </div></div>
+
+        <div class="gstep"><div class="gnum">2</div><div>
+          <div class="gtitle">Crea un progetto su Google Cloud Console</div>
+          <div class="gdesc">
+            Vai su <a href="https://console.cloud.google.com" target="_blank">console.cloud.google.com</a>.<br>
+            Clicca sul selettore progetti in alto → <strong>Nuovo progetto</strong> → nome <code>FinanzePIVA</code> → Crea.
+          </div>
+        </div></div>
+
+        <div class="gstep"><div class="gnum">3</div><div>
+          <div class="gtitle">Abilita le tre API necessarie</div>
+          <div class="gdesc">
+            Vai su <strong>API e servizi → Libreria</strong>. Cerca e abilita:<br>
+            — <code>Google Sheets API</code> — per leggere e scrivere i dati finanziari<br>
+            — <code>Google Drive API</code> — per archiviare i PDF delle fatture<br>
+            — <code>Google Picker API</code> — per selezionare file da Drive (opzionale)
+          </div>
+        </div></div>
+
+        <div class="gstep"><div class="gnum">4</div><div>
+          <div class="gtitle">Configura la schermata di consenso OAuth</div>
+          <div class="gdesc">
+            Vai su <strong>API e servizi → Schermata consenso OAuth</strong>.<br>
+            Tipo utente: <code>Esterno</code> → Crea.<br>
+            Compila: nome app <code>Finanze PIVA</code>, email supporto (la tua).<br>
+            Nella sezione <strong>Ambiti</strong> aggiungi:<br>
+            — <code>.../auth/spreadsheets</code> — lettura/scrittura Sheets<br>
+            — <code>.../auth/drive.file</code> — accesso solo ai file creati dall'app<br>
+            Nella sezione <strong>Utenti di test</strong> aggiungi la tua email Google.<br>
+            <em>Nota: finché l'app è in modalità "test" funziona solo per gli utenti aggiunti qui.</em>
+          </div>
+        </div></div>
+
+        <div class="gstep"><div class="gnum">5</div><div>
+          <div class="gtitle">Crea le credenziali OAuth 2.0</div>
+          <div class="gdesc">
+            Vai su <strong>API e servizi → Credenziali → Crea credenziali → ID client OAuth</strong>.<br>
+            Tipo applicazione: <code>Applicazione web</code>.<br>
+            Nome: <code>Finanze PIVA Web</code>.<br>
+            In <strong>"Origini JavaScript autorizzate"</strong> aggiungi <strong>esattamente</strong>:<br>
+            <code>https://tuonome.github.io</code><br>
+            (sostituisci <code>tuonome</code> con il tuo username GitHub)<br>
+            In <strong>"URI di reindirizzamento autorizzati"</strong> aggiungi:<br>
+            <code>https://tuonome.github.io/finanze-piva</code><br>
+            Clicca <strong>Crea</strong>. Copia il <strong>Client ID</strong> che appare.
+          </div>
+        </div></div>
+
+        <div class="gstep"><div class="gnum">6</div><div>
+          <div class="gtitle">Incolla il Client ID nell'app e accedi</div>
+          <div class="gdesc">
+            Vai su <strong>Impostazioni → Google → Google Client ID</strong> e incolla il codice copiato (formato: <code>123456789-abc...apps.googleusercontent.com</code>).<br>
+            Clicca <strong>Sincronizza ora</strong> oppure ricarica la pagina e accedi con Google.<br>
+            L'app creerà automaticamente:<br>
+            — Google Sheet <code>Finanze PIVA</code> con 7 fogli strutturati<br>
+            — Cartella Drive <code>Finanze PIVA / Fatture</code> per i PDF
+          </div>
+        </div></div>
+
+        <div class="gstep"><div class="gnum">7</div><div>
+          <div class="gtitle">Come funziona la sincronizzazione</div>
+          <div class="gdesc">
+            Ogni volta che aggiungi un incasso, una rata INPS, un conto o un movimento, i dati vengono salvati in tempo reale sul tuo Google Sheet.<br>
+            Ogni PDF che carichi viene salvato nella cartella Drive e il link viene memorizzato nello Sheet.<br>
+            Aprendo l'app da telefono, tablet o altro PC troverai tutto sincronizzato.<br>
+            Puoi anche aprire il Google Sheet direttamente da Drive per vedere i dati in formato tabella e fare analisi aggiuntive.
+          </div>
+        </div></div>
+
+        <div class="infobox">
+          <strong>Tip sicurezza:</strong> l'ambito <code>drive.file</code> permette all'app di accedere <em>solo</em> ai file che essa stessa crea — non all'intero Drive. I tuoi altri file rimangono privati e non accessibili dall'app.
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /wrap -->
+</div><!-- /app -->
+
+<!-- PDF VIEWER -->
+<div class="pdf-viewer" id="pdf-viewer">
+  <div class="pv-bar">
+    <span class="pv-title" id="pv-title">—</span>
+    <a id="pv-dl" href="#" download style="color:var(--teal);font-size:10px;text-decoration:none">Scarica</a>
+    <button class="btn sm dr" onclick="closePV()">Chiudi</button>
+  </div>
+  <iframe class="pv-frame" id="pv-frame" src="about:blank"></iframe>
+</div>
+
+<!-- MOBILE BOTTOM NAV -->
+<nav class="bnav">
+  <button class="bnavi on" onclick="go('dash',this,'bnavi')">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    Dashboard
+  </button>
+  <button class="bnavi" onclick="go('piva',this,'bnavi')">
+    <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+    P.IVA
+  </button>
+  <button class="bnavi" onclick="go('fatture',this,'bnavi')">
+    <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    Fatture
+  </button>
+  <button class="bnavi" onclick="go('fp',this,'bnavi')">
+    <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+    Finanze
+  </button>
+  <button class="bnavi" onclick="go('cfg',this,'bnavi')">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    Config
+  </button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.file';
+const SHEET_TITLE = 'Finanze PIVA';
+const FOLDER_NAME = 'Finanze PIVA';
+const SUBFOLDER_NAME = 'Fatture';
+const LS = 'fpiva_v4';
+const LS_CID = 'fpiva_cid';
+const LS_SID = 'fpiva_sid';
+const LS_FID = 'fpiva_fid';
+
+let gapiLoaded = false, gisLoaded = false;
+let tokenClient = null, accessToken = null;
+let spreadsheetId = null, driveFolderId = null;
+let charts = {};
+let syncTimer = null;
+
+let D = {
+  cfg: {irpef:0.05, coeff:0.67, inps:0.26725, anno:2025},
+  incassi:[], rateINPS:[], conti:[], carte:[], risparmi:[], movimenti:[], fatturePDF:[]
+};
+
+/* ── UTILS ── */
+const fmt = n => '€' + parseFloat(n||0).toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2});
+const today = () => new Date().toISOString().split('T')[0];
+const pct = () => D.cfg.coeff * D.cfg.irpef + D.cfg.coeff * D.cfg.inps;
+
+function toast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast show' + (type?' '+type:'');
+  setTimeout(() => t.className='toast', 2800);
+}
+
+function pill(label, type='') {
+  const p=document.getElementById('spill'), d=document.getElementById('sdot'), l=document.getElementById('slabel');
+  p.className='spill'+(type?' '+type:''); d.className='sdot'+(type==='warn'?' blink':''); l.textContent=label;
+}
+
+/* ── STORAGE ── */
+function loadLocal() { try { const s=localStorage.getItem(LS); if(s) D=JSON.parse(s); } catch(e){} }
+function saveLocal() { try { localStorage.setItem(LS, JSON.stringify(D)); } catch(e){} }
+function scheduleSave() { clearTimeout(syncTimer); syncTimer=setTimeout(()=>{ saveLocal(); if(spreadsheetId) writeSheet(); }, 1500); }
+
+/* ── AUTH ── */
+function startLocal() {
+  document.getElementById('auth').style.display='none';
+  document.getElementById('app').style.display='block';
+  loadLocal(); applySettings(); renderAll(); setTimeout(renderCharts,300);
+  pill('solo locale');
+}
+
+function skipToGuide() {
+  startLocal();
+  setTimeout(()=>go('guida'), 100);
+}
+
+function startAuth() {
+  const cid = document.getElementById('cfg-cid').value.trim() || localStorage.getItem(LS_CID)||'';
+  if(!cid) { toast('Inserisci il Client ID prima di procedere','err'); return; }
+  localStorage.setItem(LS_CID, cid);
+  pill('connessione...','warn');
+  loadGoogleLibs(cid);
+}
+
+function loadGoogleLibs(cid) {
+  const s1=document.createElement('script'); s1.src='https://apis.google.com/js/api.js';
+  s1.onload=()=>{ gapi.load('client',async()=>{ await gapi.client.init({discoveryDocs:['https://sheets.googleapis.com/$discovery/rest?version=v4','https://www.googleapis.com/discovery/v1/apis/drive/v3/rest']}); gapiLoaded=true; maybeToken(cid); }); };
+  document.head.appendChild(s1);
+  const s2=document.createElement('script'); s2.src='https://accounts.google.com/gsi/client';
+  s2.onload=()=>{ gisLoaded=true; maybeToken(cid); };
+  document.head.appendChild(s2);
+}
+
+function maybeToken(cid) {
+  if(!gapiLoaded||!gisLoaded) return;
+  tokenClient=google.accounts.oauth2.initTokenClient({ client_id:cid, scope:SCOPES,
+    callback: async resp => {
+      if(resp.error) { toast('Errore auth: '+resp.error,'err'); pill('errore','err'); return; }
+      accessToken=resp.access_token; gapi.client.setToken({access_token:accessToken});
+      document.getElementById('auth').style.display='none';
+      document.getElementById('app').style.display='block';
+      document.getElementById('uav').textContent='G';
+      loadLocal(); applySettings(); renderAll(); setTimeout(renderCharts,300);
+      pill('connesso');
+      document.getElementById('pdf-drive-info').style.display='block';
+      document.getElementById('pdf-local-info').style.display='none';
+      await initSheet();
+    }
+  });
+  tokenClient.requestAccessToken({prompt:'consent'});
+}
+
+/* ── GOOGLE SHEETS ── */
+async function initSheet() {
+  pill('inizializzazione...','warn');
+  const sid=localStorage.getItem(LS_SID);
+  const fid=localStorage.getItem(LS_FID);
+  if(sid) { spreadsheetId=sid; if(document.getElementById('s-sid')) document.getElementById('s-sid').value=sid; }
+  if(fid) { driveFolderId=fid; if(document.getElementById('s-folder')) document.getElementById('s-folder').textContent='ID: '+fid.slice(0,12)+'...'; }
+  if(spreadsheetId) { await loadSheet(); }
+  else { await createSheet(); }
+  if(!driveFolderId) await createDriveFolder();
+}
+
+async function createSheet() {
+  pill('creazione sheet...','warn');
+  try {
+    const sheets=['Incassi','INPS','Conti','Carte','Risparmi','Movimenti','FatturePDF','Config'];
+    const r=await gapi.client.sheets.spreadsheets.create({ resource:{ properties:{title:SHEET_TITLE}, sheets:sheets.map(t=>({properties:{title:t}})) } });
+    spreadsheetId=r.result.spreadsheetId;
+    localStorage.setItem(LS_SID, spreadsheetId);
+    if(document.getElementById('s-sid')) document.getElementById('s-sid').value=spreadsheetId;
+    await writeHeaders();
+    await writeSheet();
+    toast('Google Sheet creato nel tuo Drive!','ok');
+  } catch(e) { pill('errore','err'); toast('Errore creazione: '+e.message,'err'); }
+}
+
+async function writeHeaders() {
+  const hdrs = {
+    'Incassi':[['ID','Data','Cliente','Fattura','Note','Importo','Accantonamento','Netto']],
+    'INPS':[['ID','Data','Tipo','Importo','Pagata']],
+    'Conti':[['ID','Nome','Tipo','Saldo']],
+    'Carte':[['ID','Nome','SaldoDovuto','Limite']],
+    'Risparmi':[['ID','Nome','Categoria','Valore']],
+    'Movimenti':[['ID','Data','Descrizione','Importo','Tipo','Categoria']],
+    'FatturePDF':[['ID','Nome','Cliente','Fattura','Anno','DataCaricamento','DriveFileId','DriveUrl']],
+    'Config':[['Chiave','Valore']]
+  };
+  await gapi.client.sheets.spreadsheets.values.batchUpdate({ spreadsheetId, resource:{ valueInputOption:'RAW', data:Object.entries(hdrs).map(([s,v])=>({range:s+'!A1',values:v})) } });
+}
+
+async function writeSheet() {
+  if(!spreadsheetId||!accessToken) return;
+  pill('salvataggio...','warn');
+  try {
+    const data=[
+      {range:'Incassi!A2',    values: D.incassi.length    ? D.incassi.map(x=>[x.id,x.data,x.cli,x.fat||'',x.note||'',x.imp,x.acc.toFixed(2),(x.imp-x.acc).toFixed(2)]) : [['']]},
+      {range:'INPS!A2',       values: D.rateINPS.length    ? D.rateINPS.map(x=>[x.id,x.data,x.tipo,x.imp,x.pagata?'SI':'NO']) : [['']]},
+      {range:'Conti!A2',      values: D.conti.length       ? D.conti.map(x=>[x.id,x.n,x.t,x.s]) : [['']]},
+      {range:'Carte!A2',      values: D.carte.length       ? D.carte.map(x=>[x.id,x.n,x.s,x.l]) : [['']]},
+      {range:'Risparmi!A2',   values: D.risparmi.length    ? D.risparmi.map(x=>[x.id,x.n,x.t,x.v]) : [['']]},
+      {range:'Movimenti!A2',  values: D.movimenti.length   ? D.movimenti.map(x=>[x.id,x.d,x.desc,x.imp,x.t,x.c]) : [['']]},
+      {range:'FatturePDF!A2', values: D.fatturePDF.length  ? D.fatturePDF.map(x=>[x.id,x.nome,x.cli||'',x.fat||'',x.anno||'',x.data,x.driveId||'',x.driveUrl||'']) : [['']]},
+      {range:'Config!A2',     values:[['irpef',D.cfg.irpef],['coeff',D.cfg.coeff],['inps',D.cfg.inps],['anno',D.cfg.anno]]}
+    ];
+    await gapi.client.sheets.spreadsheets.values.batchUpdate({ spreadsheetId, resource:{valueInputOption:'RAW',data} });
+    const now=new Date().toLocaleString('it-IT');
+    if(document.getElementById('s-sync')) document.getElementById('s-sync').textContent=now;
+    pill('sincronizzato');
+  } catch(e) { pill('errore sync','err'); toast('Errore sync: '+e.message,'err'); }
+}
+
+async function loadSheet() {
+  pill('caricamento...','warn');
+  try {
+    const sheets=['Incassi','INPS','Conti','Carte','Risparmi','Movimenti','FatturePDF','Config'];
+    const r=await gapi.client.sheets.spreadsheets.values.batchGet({ spreadsheetId, ranges:sheets.map(s=>s+'!A2:Z') });
+    const vr=r.result.valueRanges;
+    const p=(i)=>(vr[i]?.values||[]).filter(r=>r[0]);
+    D.incassi    = p(0).map(r=>({id:+r[0],data:r[1],cli:r[2],fat:r[3],note:r[4],imp:+r[5],acc:+r[6]}));
+    D.rateINPS   = p(1).map(r=>({id:+r[0],data:r[1],tipo:r[2],imp:+r[3],pagata:r[4]==='SI'}));
+    D.conti      = p(2).map(r=>({id:+r[0],n:r[1],t:r[2],s:+r[3]}));
+    D.carte      = p(3).map(r=>({id:+r[0],n:r[1],s:+r[2],l:+r[3]}));
+    D.risparmi   = p(4).map(r=>({id:+r[0],n:r[1],t:r[2],v:+r[3]}));
+    D.movimenti  = p(5).map(r=>({id:+r[0],d:r[1],desc:r[2],imp:+r[3],t:r[4],c:r[5]}));
+    D.fatturePDF = p(6).map(r=>({id:+r[0],nome:r[1],cli:r[2],fat:r[3],anno:r[4],data:r[5],driveId:r[6],driveUrl:r[7]}));
+    p(7).forEach(r=>{ if(r[0]in D.cfg) D.cfg[r[0]]=isNaN(+r[1])?r[1]:+r[1]; });
+    saveLocal(); applySettings(); renderAll(); renderCharts();
+    pill('sincronizzato'); toast('Dati caricati da Google Sheets','ok');
+  } catch(e) { pill('errore','err'); toast('Errore caricamento: '+e.message,'err'); loadLocal(); renderAll(); renderCharts(); }
+}
+
+async function syncNow() {
+  if(!spreadsheetId) { toast('Configura prima il Client ID nelle impostazioni','err'); return; }
+  await writeSheet();
+}
+
+/* ── GOOGLE DRIVE per PDF ── */
+async function createDriveFolder() {
+  try {
+    const r1=await gapi.client.drive.files.create({ resource:{name:FOLDER_NAME,mimeType:'application/vnd.google-apps.folder'}, fields:'id' });
+    const parentId=r1.result.id;
+    const r2=await gapi.client.drive.files.create({ resource:{name:SUBFOLDER_NAME,mimeType:'application/vnd.google-apps.folder',parents:[parentId]}, fields:'id' });
+    driveFolderId=r2.result.id;
+    localStorage.setItem(LS_FID, driveFolderId);
+    if(document.getElementById('s-folder')) document.getElementById('s-folder').textContent='Creata — ID: '+driveFolderId.slice(0,12)+'...';
+  } catch(e) { console.warn('Errore cartella Drive:', e); }
+}
+
+async function uploadPDFtoDrive(file, metadata) {
+  if(!accessToken||!driveFolderId) return null;
+  try {
+    const form=new FormData();
+    const meta={name:metadata.nome, parents:[driveFolderId], mimeType:'application/pdf', description:JSON.stringify(metadata)};
+    form.append('metadata', new Blob([JSON.stringify(meta)],{type:'application/json'}));
+    form.append('file', file);
+    const r=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,webViewLink', {
+      method:'POST', headers:{Authorization:'Bearer '+accessToken}, body:form
+    });
+    if(!r.ok) return null;
+    const j=await r.json();
+    return {driveId:j.id, driveUrl:j.webViewLink};
+  } catch(e) { return null; }
+}
+
+/* ── NAV ── */
+function go(id, btn, cls='ntab') {
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.'+cls).forEach(b=>b.classList.remove('on'));
+  const sec=document.getElementById('sec-'+id);
+  if(sec) sec.classList.add('on');
+  if(btn) btn.classList.add('on');
+  if(id==='dash') setTimeout(renderCharts,100);
+}
+
+function showFt(id, btn) {
+  document.querySelectorAll('.ft').forEach(t=>t.style.display='none');
+  document.querySelectorAll('.itab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('ft-'+id).style.display='block';
+  btn.classList.add('on');
+}
+
+/* ── SETTINGS ── */
+function applySettings() {
+  document.getElementById('c-irpef').value=D.cfg.irpef;
+  document.getElementById('c-coeff').value=D.cfg.coeff;
+  document.getElementById('c-inps').value=D.cfg.inps;
+  document.getElementById('c-anno').value=D.cfg.anno;
+  const cid=localStorage.getItem(LS_CID)||'';
+  if(document.getElementById('s-cid')) document.getElementById('s-cid').value=cid;
+  const sid=localStorage.getItem(LS_SID)||'';
+  if(document.getElementById('s-sid')) document.getElementById('s-sid').value=sid;
+  updateCfgPreview();
+}
+
+function saveCfg() {
+  D.cfg.irpef=parseFloat(document.getElementById('c-irpef').value);
+  D.cfg.coeff=parseFloat(document.getElementById('c-coeff').value);
+  D.cfg.inps=parseFloat(document.getElementById('c-inps').value);
+  D.cfg.anno=parseInt(document.getElementById('c-anno').value);
+  scheduleSave(); updateCfgPreview(); renderAll(); renderCharts();
+}
+
+function saveClientId() {
+  localStorage.setItem(LS_CID, document.getElementById('s-cid').value.trim());
+}
+
+function updateCfgPreview() {
+  const pi=D.cfg.coeff*D.cfg.irpef, pn=D.cfg.coeff*D.cfg.inps, tot=pi+pn;
+  document.getElementById('c-irpef-v').textContent=fmt(1000*pi);
+  document.getElementById('c-inps-v').textContent=fmt(1000*pn);
+  document.getElementById('c-tot-v').textContent=fmt(1000*tot);
+  document.getElementById('c-net-v').textContent=fmt(1000*(1-tot));
+}
+
+/* ── P.IVA ── */
+function prevInc() {
+  const imp=parseFloat(document.getElementById('i-i').value)||0;
+  const box=document.getElementById('i-prev');
+  if(imp>0) {
+    const tot=imp*pct(),irpef=imp*D.cfg.coeff*D.cfg.irpef,inps=imp*D.cfg.coeff*D.cfg.inps;
+    document.getElementById('i-pv').textContent=fmt(tot);
+    document.getElementById('i-pbr').textContent='IRPEF: '+fmt(irpef)+'  ·  INPS: '+fmt(inps);
+    box.classList.add('show');
+  } else box.classList.remove('show');
+}
+
+function addInc() {
+  const data=document.getElementById('i-d').value||today();
+  const cli=document.getElementById('i-c').value.trim()||'Cliente';
+  const fat=document.getElementById('i-f').value.trim();
+  const note=document.getElementById('i-n').value.trim();
+  const imp=parseFloat(document.getElementById('i-i').value);
+  if(!imp||imp<=0){toast('Inserisci un importo valido','err');return;}
+  D.incassi.unshift({id:Date.now(),data,cli,fat,note,imp,acc:+(imp*pct()).toFixed(2)});
+  ['i-d','i-c','i-f','i-n','i-i'].forEach(x=>document.getElementById(x).value='');
+  document.getElementById('i-prev').classList.remove('show');
+  scheduleSave(); renderAll(); renderCharts(); toast('Incasso aggiunto','ok');
+}
+
+function delInc(id){D.incassi=D.incassi.filter(x=>x.id!==id);scheduleSave();renderAll();renderCharts();}
+
+function renderInc() {
+  const fil=document.getElementById('fil-yr').value;
+  const list=fil==='tutti'?D.incassi:D.incassi.filter(x=>x.data.startsWith(fil));
+  const tb=document.getElementById('tb-inc');
+  if(!list.length){tb.innerHTML='<tr><td colspan="7" class="es">Nessun incasso registrato</td></tr>';return;}
+  tb.innerHTML=list.map(x=>`<tr>
+    <td style="white-space:nowrap">${x.data}</td>
+    <td>${x.cli}${x.note?'<br><span class="tag">'+x.note+'</span>':''}</td>
+    <td><span class="tag">${x.fat||'—'}</span></td>
+    <td style="font-weight:400">${fmt(x.imp)}</td>
+    <td><span class="badge amber">${fmt(x.acc)}</span></td>
+    <td style="color:var(--teal)">${fmt(x.imp-x.acc)}</td>
+    <td><button class="btn sm dr" onclick="delInc(${x.id})">✕</button></td>
+  </tr>`).join('');
+}
+
+function renderPivaMet() {
+  const yr=String(D.cfg.anno);
+  document.getElementById('p-yr').textContent=yr;
+  const list=D.incassi.filter(x=>x.data.startsWith(yr));
+  const tI=list.reduce((s,x)=>s+x.imp,0), tA=list.reduce((s,x)=>s+x.acc,0);
+  document.getElementById('p-inc').textContent=fmt(tI);
+  document.getElementById('p-acc').textContent=fmt(tA);
+  document.getElementById('p-net').textContent=fmt(tI-tA);
+  const p=Math.min(100,(tI/85000)*100);
+  document.getElementById('p-qf').style.width=p.toFixed(1)+'%';
+  document.getElementById('p-qp').textContent=p.toFixed(1)+'% — '+fmt(tI)+' di €85.000';
+  const ipag=D.rateINPS.filter(x=>x.pagata).reduce((s,x)=>s+x.imp,0);
+  const iest=tI*D.cfg.coeff*D.cfg.inps;
+  document.getElementById('p-ipag').textContent=fmt(ipag);
+  document.getElementById('p-ires').textContent=fmt(Math.max(0,iest-ipag));
+}
+
+function addINPS(){
+  const data=document.getElementById('in-d').value||today();
+  const imp=parseFloat(document.getElementById('in-i').value);
+  const tipo=document.getElementById('in-t').value;
+  if(!imp||imp<=0){toast('Inserisci importo INPS','err');return;}
+  D.rateINPS.push({id:Date.now(),data,tipo,imp:+imp.toFixed(2),pagata:false});
+  document.getElementById('in-i').value='';document.getElementById('in-d').value='';
+  scheduleSave();renderAll();renderCharts();toast('Rata INPS aggiunta','ok');
+}
+
+function togINPS(id){const r=D.rateINPS.find(x=>x.id===id);if(r){r.pagata=!r.pagata;scheduleSave();renderAll();renderCharts();}}
+function delINPS(id){D.rateINPS=D.rateINPS.filter(x=>x.id!==id);scheduleSave();renderAll();renderCharts();}
+
+function genINPS(){
+  const yr=D.cfg.anno;
+  const tot=D.incassi.filter(x=>x.data.startsWith(String(yr))).reduce((s,x)=>s+x.imp,0);
+  if(!tot){toast('Aggiungi prima degli incassi','err');return;}
+  const base=tot*D.cfg.coeff*D.cfg.inps;
+  D.rateINPS.push(
+    {id:Date.now()+1,data:yr+'-05-31',tipo:'Contributo minimo',imp:+(base*.4).toFixed(2),pagata:false},
+    {id:Date.now()+2,data:yr+'-08-20',tipo:'Acconto I',imp:+(base*.3).toFixed(2),pagata:false},
+    {id:Date.now()+3,data:yr+'-11-30',tipo:'Acconto II',imp:+(base*.3).toFixed(2),pagata:false}
+  );
+  scheduleSave();renderAll();renderCharts();toast('Rate stimate. Verifica con il commercialista.','ok');
+}
+
+function renderINPS(){
+  const tb=document.getElementById('tb-inps');
+  const s=[...D.rateINPS].sort((a,b)=>a.data.localeCompare(b.data));
+  if(!s.length){tb.innerHTML='<tr><td colspan="5" class="es">Nessuna rata</td></tr>';return;}
+  tb.innerHTML=s.map(r=>`<tr>
+    <td style="white-space:nowrap">${r.data}</td>
+    <td>${r.tipo}</td>
+    <td>${fmt(r.imp)}</td>
+    <td><span class="badge ${r.pagata?'teal':'amber'}" style="cursor:pointer" onclick="togINPS(${r.id})">${r.pagata?'✓ Pagata':'Da pagare'}</span></td>
+    <td><button class="btn sm dr" onclick="delINPS(${r.id})">✕</button></td>
+  </tr>`).join('');
+}
+
+/* ── PDF FATTURE ── */
+function dragOver(e){e.preventDefault();document.getElementById('upload-zone').classList.add('drag');}
+function dragLeave(e){document.getElementById('upload-zone').classList.remove('drag');}
+function dropFile(e){e.preventDefault();dragLeave(e);handlePDFFiles(Array.from(e.dataTransfer.files));}
+function handlePDF(e){handlePDFFiles(Array.from(e.target.files));}
+
+async function handlePDFFiles(files) {
+  const pdfs=files.filter(f=>f.type==='application/pdf');
+  if(!pdfs.length){toast('Seleziona file PDF','err');return;}
+  const fat=document.getElementById('pdf-fat').value.trim();
+  const cli=document.getElementById('pdf-cli').value.trim();
+  const anno=document.getElementById('pdf-yr').value;
+  for(const file of pdfs) {
+    if(file.size>10*1024*1024){toast(file.name+' supera 10MB','err');continue;}
+    pill('caricamento PDF...','warn');
+    let driveId='', driveUrl='';
+    if(accessToken&&driveFolderId) {
+      const r=await uploadPDFtoDrive(file,{nome:file.name,fat,cli,anno});
+      if(r){driveId=r.driveId;driveUrl=r.driveUrl;}
+    }
+    const base64=await fileToBase64(file);
+    const rec={id:Date.now()+Math.random(),nome:file.name,cli,fat,anno,data:today(),driveId,driveUrl,base64:driveId?'':base64};
+    D.fatturePDF.unshift(rec);
+  }
+  document.getElementById('pdf-input').value='';
+  document.getElementById('pdf-fat').value='';
+  document.getElementById('pdf-cli').value='';
+  scheduleSave();renderPDF();
+  toast(pdfs.length===1?'PDF caricato':'PDF caricati ('+pdfs.length+')','ok');
+  pill(spreadsheetId?'sincronizzato':'locale');
+}
+
+function fileToBase64(file){
+  return new Promise(res=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.readAsDataURL(file);});
+}
+
+function renderPDF(){
+  const filtro=document.getElementById('pdf-fil-yr').value;
+  const q=document.getElementById('pdf-search').value.trim().toLowerCase();
+  let list=D.fatturePDF;
+  if(filtro!=='tutti') list=list.filter(x=>x.anno===filtro);
+  if(q) list=list.filter(x=>(x.nome+x.cli+x.fat).toLowerCase().includes(q));
+  document.getElementById('pdf-count').textContent=D.fatturePDF.length;
+  const grid=document.getElementById('pdf-grid');
+  if(!list.length){grid.innerHTML='<div class="es" style="grid-column:1/-1">Nessuna fattura trovata</div>';return;}
+  grid.innerHTML=list.map(x=>`
+    <div class="pdf-card" onclick="openPDF('${x.id}')">
+      <span class="pdf-icon">📄</span>
+      <div class="pdf-name">${x.nome}</div>
+      <div class="pdf-meta">${x.fat||'—'} · ${x.cli||'—'}</div>
+      <div class="pdf-meta" style="margin-top:2px">${x.anno} · ${x.data}</div>
+      ${x.driveUrl?'<div class="pdf-meta" style="color:var(--teal);margin-top:3px">● Drive</div>':''}
+      <button class="btn sm dr pdf-del" onclick="event.stopPropagation();delPDF('${x.id}')">✕</button>
+    </div>`).join('');
+}
+
+function openPDF(id) {
+  const x=D.fatturePDF.find(f=>String(f.id)===String(id));
+  if(!x) return;
+  const viewer=document.getElementById('pdf-viewer');
+  const frame=document.getElementById('pv-frame');
+  const title=document.getElementById('pv-title');
+  const dl=document.getElementById('pv-dl');
+  title.textContent=x.nome+' — '+x.cli;
+  if(x.driveUrl) { frame.src=x.driveUrl.replace('/view','/preview'); dl.href=x.driveUrl; }
+  else if(x.base64) { frame.src=x.base64; dl.href=x.base64; dl.download=x.nome; }
+  viewer.classList.add('show');
+}
+
+function closePV(){
+  document.getElementById('pdf-viewer').classList.remove('show');
+  document.getElementById('pv-frame').src='about:blank';
+}
+
+function delPDF(id){
+  D.fatturePDF=D.fatturePDF.filter(f=>String(f.id)!==String(id));
+  scheduleSave();renderPDF();toast('Fattura rimossa','ok');
+}
+
+/* ── FINANZE PERSONALI ── */
+function addConto(){
+  const n=document.getElementById('cc-n').value.trim(),s=parseFloat(document.getElementById('cc-s').value),t=document.getElementById('cc-t').value;
+  if(!n||isNaN(s)){toast('Compila nome e saldo','err');return;}
+  D.conti.push({id:Date.now(),n,s:+s.toFixed(2),t});
+  document.getElementById('cc-n').value='';document.getElementById('cc-s').value='';
+  scheduleSave();renderFP();renderCharts();toast('Conto aggiunto','ok');
+}
+function delConto(id){D.conti=D.conti.filter(x=>x.id!==id);scheduleSave();renderFP();renderCharts();}
+
+function addCarta(){
+  const n=document.getElementById('ca-n').value.trim(),s=parseFloat(document.getElementById('ca-s').value)||0,l=parseFloat(document.getElementById('ca-l').value)||0;
+  if(!n){toast('Inserisci nome carta','err');return;}
+  D.carte.push({id:Date.now(),n,s:+s.toFixed(2),l:+l.toFixed(2)});
+  ['ca-n','ca-s','ca-l'].forEach(x=>document.getElementById(x).value='');
+  scheduleSave();renderFP();renderCharts();toast('Carta aggiunta','ok');
+}
+function delCarta(id){D.carte=D.carte.filter(x=>x.id!==id);scheduleSave();renderFP();renderCharts();}
+
+function addRsp(){
+  const n=document.getElementById('rs-n').value.trim(),v=parseFloat(document.getElementById('rs-v').value),t=document.getElementById('rs-t').value;
+  if(!n||isNaN(v)){toast('Compila nome e valore','err');return;}
+  D.risparmi.push({id:Date.now(),n,v:+v.toFixed(2),t});
+  document.getElementById('rs-n').value='';document.getElementById('rs-v').value='';
+  scheduleSave();renderFP();renderCharts();toast('Aggiunto','ok');
+}
+function delRsp(id){D.risparmi=D.risparmi.filter(x=>x.id!==id);scheduleSave();renderFP();renderCharts();}
+
+function addMov(){
+  const d=document.getElementById('mv-d').value||today(),desc=document.getElementById('mv-desc').value.trim()||'—',imp=parseFloat(document.getElementById('mv-i').value),t=document.getElementById('mv-t').value,c=document.getElementById('mv-c').value;
+  if(!imp||imp<=0){toast('Inserisci importo','err');return;}
+  D.movimenti.unshift({id:Date.now(),d,desc,imp:+imp.toFixed(2),t,c});
+  ['mv-d','mv-desc','mv-i'].forEach(x=>document.getElementById(x).value='');
+  scheduleSave();renderFP();renderCharts();toast('Movimento aggiunto','ok');
+}
+function delMov(id){D.movimenti=D.movimenti.filter(x=>x.id!==id);scheduleSave();renderFP();renderCharts();}
+
+function renderFP(){
+  const tL=D.conti.reduce((s,x)=>s+x.s,0);
+  const rCat=['Fondo emergenza','Risparmio obiettivo'];
+  const tR=D.risparmi.filter(x=>rCat.includes(x.t)).reduce((s,x)=>s+x.v,0);
+  const tIv=D.risparmi.filter(x=>!rCat.includes(x.t)).reduce((s,x)=>s+x.v,0);
+  const tD=D.carte.reduce((s,x)=>s+x.s,0);
+  document.getElementById('f-liq').textContent=fmt(tL);
+  document.getElementById('f-rsp').textContent=fmt(tR);
+  document.getElementById('f-inv').textContent=fmt(tIv);
+  document.getElementById('f-deb').textContent=fmt(tD);
+  document.getElementById('f-pat').textContent=fmt(tL+tR+tIv-tD);
+  const mes=new Date().toISOString().slice(0,7);
+  document.getElementById('f-em').textContent=fmt(D.movimenti.filter(x=>x.t==='entrata'&&x.d.startsWith(mes)).reduce((s,x)=>s+x.imp,0));
+
+  const tbc=document.getElementById('tb-conti');
+  tbc.innerHTML=!D.conti.length?'<tr><td colspan="4" class="es">Nessun conto</td></tr>':D.conti.map(c=>`<tr><td>${c.n}</td><td><span class="tag">${c.t}</span></td><td>${fmt(c.s)}</td><td><button class="btn sm dr" onclick="delConto(${c.id})">✕</button></td></tr>`).join('');
+
+  const tbca=document.getElementById('tb-carte');
+  tbca.innerHTML=!D.carte.length?'<tr><td colspan="5" class="es">Nessuna carta</td></tr>':D.carte.map(c=>{const u=c.l>0?((c.s/c.l)*100).toFixed(0)+'%':'—';return`<tr><td>${c.n}</td><td style="color:var(--red)">${fmt(c.s)}</td><td>${fmt(c.l)}</td><td>${u}</td><td><button class="btn sm dr" onclick="delCarta(${c.id})">✕</button></td></tr>`;}).join('');
+
+  const tbr=document.getElementById('tb-rsp');
+  tbr.innerHTML=!D.risparmi.length?'<tr><td colspan="4" class="es">Nessun elemento</td></tr>':D.risparmi.map(r=>`<tr><td>${r.n}</td><td><span class="badge blue">${r.t}</span></td><td>${fmt(r.v)}</td><td><button class="btn sm dr" onclick="delRsp(${r.id})">✕</button></td></tr>`).join('');
+
+  const tbm=document.getElementById('tb-mov');
+  tbm.innerHTML=!D.movimenti.length?'<tr><td colspan="5" class="es">Nessun movimento</td></tr>':D.movimenti.slice(0,50).map(m=>`<tr><td style="white-space:nowrap">${m.d}</td><td>${m.desc}</td><td><span class="tag">${m.c}</span></td><td style="color:${m.t==='entrata'?'var(--teal)':'var(--red)'}">${m.t==='entrata'?'+':'−'}${fmt(m.imp)}</td><td><button class="btn sm dr" onclick="delMov(${m.id})">✕</button></td></tr>`).join('');
+}
+
+function renderDashMet(){
+  const yr=String(D.cfg.anno);
+  document.getElementById('d-yr').textContent=yr;
+  const list=D.incassi.filter(x=>x.data.startsWith(yr));
+  const tI=list.reduce((s,x)=>s+x.imp,0),tA=list.reduce((s,x)=>s+x.acc,0);
+  const tL=D.conti.reduce((s,x)=>s+x.s,0);
+  const rCat=['Fondo emergenza','Risparmio obiettivo'];
+  const tR=D.risparmi.filter(x=>rCat.includes(x.t)).reduce((s,x)=>s+x.v,0);
+  const tIv=D.risparmi.filter(x=>!rCat.includes(x.t)).reduce((s,x)=>s+x.v,0);
+  const tD=D.carte.reduce((s,x)=>s+x.s,0);
+  document.getElementById('d-inc').textContent=fmt(tI);
+  document.getElementById('d-acc').textContent=fmt(tA);
+  document.getElementById('d-apct').textContent=(pct()*100).toFixed(1)+'% per fattura';
+  document.getElementById('d-liq').textContent=fmt(tL);
+  document.getElementById('d-pat').textContent=fmt(tL+tR+tIv-tD);
+}
+
+/* ── CHARTS ── */
+const chOpts=(extra={})=>({responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#444',font:{size:9},autoSkip:false,maxRotation:0},grid:{color:'rgba(255,255,255,.03)'}},y:{ticks:{color:'#444',font:{size:9},callback:v=>v>=1000?(v/1000).toFixed(0)+'k':v},grid:{color:'rgba(255,255,255,.03)'}}}, ...extra});
+
+function mkChart(id,cfg){if(charts[id])charts[id].destroy();const el=document.getElementById(id);if(!el)return;charts[id]=new Chart(el,cfg);}
+
+function renderCharts(){
+  if(!window.Chart) return;
+  renderDashMet();
+  const yr=String(D.cfg.anno);
+  const mesi=['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+  const lordo=new Array(12).fill(0),acc=new Array(12).fill(0);
+  D.incassi.filter(x=>x.data.startsWith(yr)).forEach(x=>{const m=parseInt(x.data.split('-')[1])-1;lordo[m]+=x.imp;acc[m]+=x.acc;});
+  const netto=lordo.map((v,i)=>+(v-acc[i]).toFixed(2));
+
+  mkChart('ch-piva',{type:'bar',data:{labels:mesi,datasets:[
+    {data:lordo,backgroundColor:'#2dd4a0',borderRadius:3},
+    {data:acc,backgroundColor:'#e8a020',borderRadius:3},
+    {data:netto,backgroundColor:'#163d2e',borderRadius:3}
+  ]},options:chOpts()});
+
+  const ent=new Array(12).fill(0),usc=new Array(12).fill(0);
+  D.movimenti.filter(x=>x.d&&x.d.startsWith(yr)).forEach(x=>{const m=parseInt(x.d.split('-')[1])-1;if(x.t==='entrata')ent[m]+=x.imp;else usc[m]+=x.imp;});
+  mkChart('ch-mov',{type:'bar',data:{labels:mesi,datasets:[
+    {data:ent,backgroundColor:'#6090e8',borderRadius:3},
+    {data:usc,backgroundColor:'#d95858',borderRadius:3}
+  ]},options:chOpts()});
+
+  const rCat=['Fondo emergenza','Risparmio obiettivo'];
+  const vals=[D.conti.reduce((s,x)=>s+x.s,0), D.risparmi.filter(x=>rCat.includes(x.t)).reduce((s,x)=>s+x.v,0), D.risparmi.filter(x=>!rCat.includes(x.t)).reduce((s,x)=>s+x.v,0)];
+  const pColors=['#2dd4a0','#6090e8','#9880e8'];
+  const pLabels=['Liquidità','Risparmi','Investimenti'];
+  const legEl=document.getElementById('leg-pat');
+  if(legEl) legEl.innerHTML=pLabels.map((l,i)=>`<span><span class="lsq" style="background:${pColors[i]}"></span>${l}: ${fmt(vals[i])}</span>`).join('');
+  const hasAssets=vals.some(v=>v>0);
+  mkChart('ch-pat',{type:'doughnut',data:{labels:pLabels,datasets:[{data:hasAssets?vals:[1],backgroundColor:hasAssets?pColors:['#202020'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>hasAssets?fmt(ctx.raw):'Nessun dato'}}}}});
+
+  const ipag=D.rateINPS.filter(x=>x.pagata).reduce((s,x)=>s+x.imp,0);
+  const ires=D.rateINPS.filter(x=>!x.pagata).reduce((s,x)=>s+x.imp,0);
+  mkChart('ch-inps',{type:'doughnut',data:{labels:['Pagata','Residua'],datasets:[{data:[ipag||0.01,ires||0.01],backgroundColor:['#2dd4a0','#e8a020'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>fmt(ctx.raw)}}}}});
+
+  const tInc=D.incassi.filter(x=>x.data.startsWith(yr)).reduce((s,x)=>s+x.imp,0);
+  const usato=Math.min(tInc,85000),res=Math.max(0,85000-tInc);
+  mkChart('ch-soglia',{type:'doughnut',data:{labels:['Incassato','Residuo'],datasets:[{data:[usato||0.01,res||84999.99],backgroundColor:['#2dd4a0','#202020'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>fmt(ctx.raw)}}}}});
+}
+
+function renderAll(){renderPivaMet();renderInc();renderINPS();renderFP();renderDashMet();renderPDF();}
+
+function exportJSON(){
+  const blob=new Blob([JSON.stringify(D,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='finanze_piva_backup_'+today()+'.json';a.click();
+  toast('Backup esportato','ok');
+}
+
+function resetAll(){
+  D={cfg:{irpef:0.05,coeff:0.67,inps:0.26725,anno:2025},incassi:[],rateINPS:[],conti:[],carte:[],risparmi:[],movimenti:[],fatturePDF:[]};
+  saveLocal();applySettings();renderAll();renderCharts();toast('Dati azzerati','ok');
+}
+
+/* ── INIT ── */
+window.addEventListener('load',()=>{
+  const cid=localStorage.getItem(LS_CID)||'';
+  if(cid&&document.getElementById('cfg-cid')) document.getElementById('cfg-cid').value=cid;
+  const sid=localStorage.getItem(LS_SID)||'';
+  if(sid) spreadsheetId=sid;
+  const fid=localStorage.getItem(LS_FID)||'';
+  if(fid) driveFolderId=fid;
+});
+</script>
+</body>
+</html>
